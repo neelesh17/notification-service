@@ -6,6 +6,8 @@ import com.neelesh.noftification_service.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -19,12 +21,12 @@ public class EmailConsumer {
             topics = "${app.kafka.topics.email}",
             groupId = "notification-group"
     )
-    public void  consume(NotificationEvent event) {
+    public void  consume(NotificationEvent event, @Header(KafkaHeaders.RECEIVED_PARTITION) int partition) {
         notificationRepository.findById(event.getNotificationId())
                 .ifPresent(notification -> {
                     try {
-                        log.info("[EMAIL] Received notificationId={} userId={}",
-                                event.getNotificationId(), event.getUserId());
+                        log.info("[EMAIL] Received notificationId={} userId={} partition={}",
+                                event.getNotificationId(), event.getUserId(), partition);
                         notification.setStatus(Notification.Status.DELIVERED);
                     } catch (Exception e) {
                         notification.setStatus(Notification.Status.FAILED);
