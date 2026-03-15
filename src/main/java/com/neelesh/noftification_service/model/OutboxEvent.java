@@ -1,10 +1,5 @@
 package com.neelesh.noftification_service.model;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.neelesh.noftification_service.enums.Channel;
 import com.neelesh.noftification_service.enums.Priority;
 import jakarta.persistence.*;
@@ -16,18 +11,20 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 @Entity
-@Table(name="notification")
-@Getter
-@Setter
-@NoArgsConstructor
 @Builder
 @AllArgsConstructor
-public class Notification {
+@NoArgsConstructor
+@Table(name="outbox")
+@Getter
+@Setter
+public class OutboxEvent {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
     @Column(name="user_id", nullable=false)
     String userId;
+    @Column(name = "notification_id", nullable = false)
+    Long notificationId;
     @Enumerated(EnumType.STRING)
     Channel channel;
     @Enumerated(EnumType.STRING)
@@ -36,28 +33,18 @@ public class Notification {
     @Column(name="body", nullable=false)
     String body;
     @Enumerated(EnumType.STRING)
-    Status status;
+    OutboxEvent.Status status;
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json")
     private Map<String, String> metadata;
-    @Version
-    private Long version;
     LocalDateTime createdAt;
-    LocalDateTime updatedAt;
 
     public enum Status {
-        PENDING,DELIVERED,FAILED,DELAYED
+        PENDING,PUBLISHED
     }
-
     @PrePersist
     protected void onCreate(){
         createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-        if(status == null) status  = Status.PENDING;
-    }
-
-    @PreUpdate
-    protected void onUpdate(){
-        updatedAt = LocalDateTime.now();
+        if(status == null) status  = OutboxEvent.Status.PENDING;
     }
 }

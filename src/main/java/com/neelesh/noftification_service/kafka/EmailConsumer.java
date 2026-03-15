@@ -24,6 +24,10 @@ public class EmailConsumer {
     public void  consume(NotificationEvent event, @Header(KafkaHeaders.RECEIVED_PARTITION) int partition) {
         notificationRepository.findById(event.getNotificationId())
                 .ifPresent(notification -> {
+                    if (notification.getStatus() == Notification.Status.DELIVERED) {
+                        log.info("Already delivered, skipping");
+                        return;
+                    }
                     try {
                         log.info("[EMAIL] Received notificationId={} userId={} partition={}",
                                 event.getNotificationId(), event.getUserId(), partition);

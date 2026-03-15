@@ -21,15 +21,18 @@ public class PushConsumer {
     public void  consume(NotificationEvent event) {
         notificationRepository.findById(event.getNotificationId())
                 .ifPresent(notification -> {
-                            try {
-                                log.info("[Push] Received notificationId={} userId={}",
-                                        event.getNotificationId(), event.getUserId());
-                                notification.setStatus(Notification.Status.DELIVERED);
-                            } catch (Exception e) {
-                                notification.setStatus(Notification.Status.FAILED);
-                            }
-                            notificationRepository.save(notification);
-                        }
-                );
+                    if (notification.getStatus() == Notification.Status.DELIVERED) {
+                        log.info("Already delivered, skipping");
+                        return;
+                    }
+                    try {
+                        log.info("[Push] Received notificationId={} userId={}",
+                                event.getNotificationId(), event.getUserId());
+                        notification.setStatus(Notification.Status.DELIVERED);
+                    } catch (Exception e) {
+                        notification.setStatus(Notification.Status.FAILED);
+                    }
+                    notificationRepository.save(notification);
+                });
     }
 }
