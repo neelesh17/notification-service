@@ -1,21 +1,19 @@
 package com.neelesh.noftification_service.service;
 
-import com.neelesh.noftification_service.dto.NotificationEvent;
 import com.neelesh.noftification_service.dto.NotificationRequest;
-import com.neelesh.noftification_service.kafka.KafkaProducer;
 import com.neelesh.noftification_service.model.Notification;
+import com.neelesh.noftification_service.model.OutboxEvent;
 import com.neelesh.noftification_service.repository.NotificationRepository;
+import com.neelesh.noftification_service.repository.OutboxRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
 public class NotificationService {
     private final NotificationRepository notificationRepository;
-    private final KafkaProducer kafkaProducer;
+    private final OutboxRepository outboxRepository;
     private final RateLimiterService rateLimiterService;
 
     @Transactional
@@ -30,17 +28,16 @@ public class NotificationService {
                 .metadata(notificationRequest.getMetadata())
                 .build();
         notificationRepository.save(notification);
-        NotificationEvent event = NotificationEvent.builder()
+        OutboxEvent outboxEvent = OutboxEvent.builder()
                 .notificationId(notification.getId())
                 .userId(notification.getUserId())
-                .body(notification.getBody())
-                .title(notification.getTitle())
-                .priority(notification.getPriority())
                 .channel(notification.getChannel())
+                .priority(notification.getPriority())
+                .title(notification.getTitle())
+                .body(notification.getBody())
                 .metadata(notification.getMetadata())
-                .createdAt(LocalDateTime.now())
                 .build();
-        kafkaProducer.publish(event);
+        outboxRepository.save(outboxEvent);
         return notification;
     }
 }
