@@ -9,9 +9,15 @@ The notification service helps send notifications to consumers based on differen
 # Technical Decisions:
 1. We used Kafka because it guarantees at least once delivery to a consumer
 2. Redis was used for rate limiting as it is a fast cache 
-3. Outbox pattern is planned to solve the dual write problem —
+3. Outbox pattern was implemented to solve the dual write problem —
    ensuring a notification saved to DB is always published to Kafka
    even if the app crashes between the two operations.
+4. Priority routing via Kafka partitions — CRITICAL messages route to
+   partition 0, PROMOTIONAL to partition 1, ensuring critical
+   notifications are processed first.
+5. Optimistic locking via @Version on Notification entity — prevents
+   duplicate status updates when multiple consumer instances process
+   the same message.
 
 # Tech Stack:
 1. Java 21
@@ -51,21 +57,20 @@ sample response:
 # Project Structure:
 - config/         KafkaConfig.java
 - enums/          Channel.java, Priority.java 
-- model/          Notification.java 
+- model/          Notification.java, OutboxEvent.java
 - dto/            NotificationRequest.java, NotificationEvent.java 
 - repository/     NotificationRepository.java 
-- service/        NotificationService.java, RateLimiterService.java 
-- kafka/          KafkaProducer.java, EmailConsumer.java, 
-- PushConsumer.java, SmsConsumer.java 
+- service/        NotificationService.java, RateLimiterService.java, OutboxPoller
+- kafka/          KafkaProducer.java, EmailConsumer.java, PushConsumer.java, SmsConsumer.java 
 - controller/     NotificationController.java 
 - resources/      application.yml, docker-compose.yml
 
 # Known Limitations:
-- Outbox implementation pending 
-- stubs for providers
+- Integration tests pending
+- Provider stubs only — real SendGrid/FCM/Twilio integration in Week 3
+- No DND window support yet
 
 # Upcoming:
-- Week 2: Outbox pattern, integration tests
-- Week 3: Real provider integration (SendGrid, FCM, Twilio) + circuit breaker
+- Week 3: Real provider integration (SendGrid, FCM, Twilio) + circuit breaker, integration tests
 - Week 4: DND windows, FreeMarker templates, Quartz scheduler
 - Week 5: Prometheus metrics, JMeter load test
