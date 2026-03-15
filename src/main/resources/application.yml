@@ -48,3 +48,5 @@ app:
       email: notif.email
       push: notif.push
       sms: notif.sms
+  outbox:
+    poller-delay-ms: 5000
