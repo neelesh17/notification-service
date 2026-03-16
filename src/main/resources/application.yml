@@ -54,3 +54,18 @@ app:
     sendgrid:
       api-key: ${SENDGRID_API_KEY}
       from-email: ${SENDGRID_FROM_EMAIL}
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      sendgrid:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+  retry:
+    instances:
+      sendgrid:
+        max-attempts: 3
+        wait-duration: 1s
+        exponential-backoff-multiplier: 2
