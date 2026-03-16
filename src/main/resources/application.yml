@@ -54,6 +54,8 @@ app:
     sendgrid:
       api-key: ${SENDGRID_API_KEY}
       from-email: ${SENDGRID_FROM_EMAIL}
+    firebase:
+      credential-path: ${FIREBASE_CREDENTIALS_PATH}
 
 resilience4j:
   circuitbreaker:
