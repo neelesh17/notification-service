@@ -50,3 +50,7 @@ app:
       sms: notif.sms
   outbox:
     poller-delay-ms: 5000
+  providers:
+    sendgrid:
+      api-key: ${SENDGRID_API_KEY}
+      from-email: ${SENDGRID_FROM_EMAIL}
