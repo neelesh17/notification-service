@@ -28,4 +28,5 @@ public class UserPreferences {
     Boolean smsEnabled;
     Boolean pushEnabled;
     String timeZone;
+    String fcmToken;
 }
