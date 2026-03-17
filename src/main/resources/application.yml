@@ -56,6 +56,11 @@ app:
       from-email: ${SENDGRID_FROM_EMAIL}
     firebase:
       credentials-path: ${FIREBASE_CREDENTIALS_PATH}
+    twilio:
+      auth-token: ${TWILIO_AUTH_TOKEN}
+      account-sid: ${TWILIO_ACCOUNT_SID}
+      from-number: ${TWILIO_FROM_NUMBER}
+
 
 resilience4j:
   circuitbreaker:
@@ -71,9 +76,22 @@ resilience4j:
         failure-rate-threshold: 50
         wait-duration-in-open-state: 30s
         permitted-number-of-calls-in-half-open-state: 3
+      twilio:
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 60s
+        permitted-number-of-calls-in-half-open-state: 3
   retry:
     instances:
       sendgrid:
         max-attempts: 3
         wait-duration: 1s
         exponential-backoff-multiplier: 2
+      fcm:
+        max-attempts: 3
+        wait-duration: 1s
+        exponential-backoff-multiplier: 2
+      twilio:
+        max-attempts: 2
+        wait-duration: 2s
