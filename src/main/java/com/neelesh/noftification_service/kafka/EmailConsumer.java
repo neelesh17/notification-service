@@ -5,18 +5,12 @@ import com.neelesh.noftification_service.model.Notification;
 import com.neelesh.noftification_service.model.UserPreferences;
 import com.neelesh.noftification_service.provider.EmailSender;
 import com.neelesh.noftification_service.repository.NotificationRepository;
+import com.neelesh.noftification_service.service.DndSchedulerService;
+import com.neelesh.noftification_service.service.DndService;
 import com.neelesh.noftification_service.service.UserPreferencesService;
-import com.sendgrid.Method;
-import com.sendgrid.Request;
-import com.sendgrid.Response;
-import com.sendgrid.SendGrid;
-import com.sendgrid.helpers.mail.Mail;
 import com.sendgrid.helpers.mail.objects.*;
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
@@ -30,6 +24,8 @@ public class EmailConsumer {
     private final NotificationRepository notificationRepository;
     private final UserPreferencesService userPreferencesService;
     private final EmailSender emailSender;
+    private final DndService dndService;
+    private final DndSchedulerService dndSchedulerService;
 
     @KafkaListener(
             topics = "${app.kafka.topics.email}",
@@ -44,6 +40,14 @@ public class EmailConsumer {
                     }
                     try {
                         UserPreferences userPreferences = userPreferencesService.getUserPreferences(notification.getUserId());
+                        if (dndService.isDndActive(userPreferences)) {
+                            log.info("[EMAIL] User in DND, delaying notificationId={}",
+                                    event.getNotificationId());
+                            notification.setStatus(Notification.Status.DELAYED);
+                            notificationRepository.save(notification);
+                            dndSchedulerService.scheduleRetry(notification, userPreferences.getDndEnd(), userPreferences.getDndStart(), userPreferences.getTimeZone());
+                            return;
+                        }
                         emailSender.send(notification, userPreferences);
 
                         log.info("[EMAIL] Send notificationId={} to userId={}",
