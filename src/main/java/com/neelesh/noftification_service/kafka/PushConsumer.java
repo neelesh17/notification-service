@@ -34,9 +34,11 @@ public class PushConsumer {
                     try {
                         UserPreferences userPreferences = userPreferencesService.getUserPreferences(notification.getUserId());
                         pushSender.send(notification, userPreferences);
-                        log.info("[Push] Received notificationId={} userId={}",
+
+                        log.info("[PUSH] Sent notificationId={} userId={}",
                                 event.getNotificationId(), event.getUserId());
                         notification.setStatus(Notification.Status.DELIVERED);
+
                     } catch (Exception e) {
                         log.error("[PUSH] Failed to send notificationId={}: {}",
                                 event.getNotificationId(), e.getMessage());

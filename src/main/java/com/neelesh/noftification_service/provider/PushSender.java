@@ -35,6 +35,6 @@ public class PushSender {
 
     public void pushFallback(Notification notification, UserPreferences userPreferences, Exception e) {
         log.error("[PUSH] Circuit open, marking failed: {}", e.getMessage());
-        notification.setStatus(Notification.Status.FAILED);
+        throw new RuntimeException("Push delivery failed: " + e.getMessage());
     }
 }
