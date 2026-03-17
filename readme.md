@@ -107,5 +107,5 @@ resources/  application.yml, docker-compose.yml
 - Single FCM token per user — production would require a separate user_fcm_tokens table for multi-device support
 
 # Upcoming
-- Week 4: DND windows, FreeMarker templates, Quartz scheduler for delayed delivery
-- Week 5: Prometheus metrics, JMeter load test, integration tests
+- Week 4: DND windows, FreeMarker templates, Quartz scheduler for delayed delivery, fix user API (POST/PUT)
+- Week 5: Prometheus metrics, JMeter load test, integration tests, CI/CD, GitHub Actions, SonarCloud

@@ -19,8 +19,8 @@ public class UserPreferencesController {
         try{
             UserPreferences userPreferences = userPreferencesService.getUserPreferences(userId);
             return ResponseEntity.ok(userPreferences);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body("User with user id not found: "+ userId);
+        } catch (UserPreferencesService.UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User with user id not found: "+ userId);
         } catch (Exception e){
             return ResponseEntity.internalServerError().body("An error occurred while fetching user: "+ e);
         }
@@ -30,8 +30,22 @@ public class UserPreferencesController {
         try{
             userPreferencesService.createUserPreferences(userPreferences);
             return ResponseEntity.status(HttpStatus.CREATED).body(userPreferences);
+        }catch (UserPreferencesService.UserAlreadyExistsException e){
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("An error occurred while creating user: "+ e);
+        }
+    }
+
+    @PutMapping("/{userId}")
+    ResponseEntity<?> updateUsersPreferences(@PathVariable String userId, @Valid @RequestBody UserPreferences userPreferences){
+        try{
+            userPreferencesService.updateUserPreferences(userId, userPreferences);
+            return ResponseEntity.ok(userPreferences);
+        } catch (UserPreferencesService.UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User with user id not found: "+ userId);
+        } catch (Exception e){
+            return ResponseEntity.internalServerError().body("An error occurred while fetching user: "+ e);
         }
     }
 }

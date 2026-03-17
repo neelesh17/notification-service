@@ -12,10 +12,33 @@ public class UserPreferencesService {
 
     public UserPreferences getUserPreferences(String userId){
         return userPreferencesRepository.findById(userId).
-                orElseThrow(() -> new RuntimeException("User preferences not found for userId: " + userId));
+                orElseThrow(() -> new UserNotFoundException("User preferences not found for userId: " + userId));
     }
 
     public void createUserPreferences(UserPreferences userPreferences){
+        if(userPreferencesRepository.existsById(userPreferences.getUserId())){
+            throw new UserAlreadyExistsException("User with userId already exists: " + userPreferences.getUserId());
+        }
         userPreferencesRepository.save(userPreferences);
+    }
+
+    public void updateUserPreferences(String userId, UserPreferences userPreferences) {
+        if (!userPreferencesRepository.existsById(userId)) {
+            throw new UserNotFoundException("User not found: " + userId);
+        }
+        userPreferences.setUserId(userId);
+        userPreferencesRepository.save(userPreferences);
+    }
+
+    public static class UserNotFoundException extends RuntimeException {
+        public UserNotFoundException(String message) {
+            super(message);
+        }
+    }
+
+    public static class UserAlreadyExistsException extends RuntimeException{
+        public UserAlreadyExistsException(String message) {
+            super(message);
+        }
     }
 }
