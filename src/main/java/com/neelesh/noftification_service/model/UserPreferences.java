@@ -27,6 +27,7 @@ public class UserPreferences {
     Boolean emailEnabled;
     Boolean smsEnabled;
     Boolean pushEnabled;
-    String timeZone;
+    @Column
+    String timeZone = "Asia/Kolkata";
     String fcmToken;
 }

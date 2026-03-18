@@ -20,7 +20,8 @@ public class DndSchedulerService {
     private final Scheduler scheduler;
 
     private ZonedDateTime calculateRetryTime(LocalTime dndEnd, LocalTime dndStart, String timezone) {
-        ZoneId zone = ZoneId.of(timezone);
+        String safeTimezone = timezone != null ? timezone : "UTC";
+        ZoneId zone = ZoneId.of(safeTimezone);
         LocalDate today = LocalDate.now(zone);
 
         // if window crosses midnight, dndEnd is tomorrow
