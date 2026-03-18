@@ -14,6 +14,7 @@ The notification service helps send notifications to consumers based on differen
 5. Optimistic locking via @Version on Notification entity — prevents duplicate status updates when multiple consumer instances process the same message.
 6. Resilience4j circuit breaker per provider — if SendGrid/FCM/Twilio starts failing, the circuit opens after 50% failure rate over 10 calls. Retries with exponential backoff (1s → 2s → 4s) before recording a failure.
 7. Provider isolation — each channel has its own Kafka topic, consumer, and circuit breaker. An SMS provider outage doesn't affect email delivery.
+8. DND windows with timezone-aware midnight-crossing check — notifications during quiet hours are marked DELAYED and retried via Quartz scheduler after the DND window ends.
 
 # Tech Stack
 1. Java 21
@@ -62,6 +63,21 @@ TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER
   "fcmToken": "device-fcm-token"
 }
 ```
+### Update user (PUT)
+`PUT http://localhost:8080/api/v1/users/{userId}`
+```json
+{
+  "userId": "user123",
+  "email": "user@gmail.com",
+  "name": "Neelesh",
+  "phone": "+91XXXXXXXXXX",
+  "emailEnabled": true,
+  "pushEnabled": true,
+  "smsEnabled": true,
+  "timezone": "Asia/Kolkata",
+  "fcmToken": "device-fcm-token"
+}
+```
 
 ### Send notification (POST)
 `POST http://localhost:8080/api/v1/notification/send`
@@ -91,7 +107,9 @@ model/      Notification.java, OutboxEvent.java, UserPreferences.java
 dto/        NotificationRequest.java, NotificationEvent.java
 repository/ NotificationRepository.java, OutboxRepository.java, UserPreferencesRepository.java
 service/    NotificationService.java, RateLimiterService.java, 
-            UserPreferencesService.java, OutboxPoller.java
+            UserPreferencesService.java, OutboxPoller.java,
+            DndService.java, DndSchedulerService.java
+job/        RetryNotificationJob.java
 kafka/      KafkaProducer.java, EmailConsumer.java, 
             PushConsumer.java, SmsConsumer.java
 provider/   EmailSender.java, PushSender.java, SMSSender.java
@@ -103,9 +121,7 @@ resources/  application.yml, docker-compose.yml
 - Integration tests pending
 - FCM requires a real Android/iOS device for actual push delivery — circuit breaker tested with invalid token
 - Twilio trial account limited to verified numbers only
-- No DND window support yet
 - Single FCM token per user — production would require a separate user_fcm_tokens table for multi-device support
 
 # Upcoming
-- Week 4: DND windows, FreeMarker templates, Quartz scheduler for delayed delivery, fix user API (POST/PUT)
 - Week 5: Prometheus metrics, JMeter load test, integration tests, CI/CD, GitHub Actions, SonarCloud
