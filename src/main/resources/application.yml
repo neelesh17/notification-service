@@ -95,3 +95,16 @@ resilience4j:
       twilio:
         max-attempts: 2
         wait-duration: 2s
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus, metrics
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true

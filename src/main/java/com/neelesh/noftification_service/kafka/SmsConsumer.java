@@ -7,11 +7,14 @@ import com.neelesh.noftification_service.provider.SMSSender;
 import com.neelesh.noftification_service.repository.NotificationRepository;
 import com.neelesh.noftification_service.service.DndSchedulerService;
 import com.neelesh.noftification_service.service.DndService;
+import com.neelesh.noftification_service.service.MetricService;
 import com.neelesh.noftification_service.service.UserPreferencesService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
+
+import java.time.Duration;
 
 @Component
 @RequiredArgsConstructor
@@ -22,12 +25,14 @@ public class SmsConsumer {
     private final SMSSender smsSender;
     private final DndService dndService;
     private final DndSchedulerService dndSchedulerService;
+    private final MetricService metricService;
 
     @KafkaListener(
             topics = "${app.kafka.topics.sms}",
             groupId = "notification-group"
     )
     public void  consume(NotificationEvent event) {
+        long startTime = System.currentTimeMillis();
         notificationRepository.findById(event.getNotificationId())
                 .ifPresent(notification -> {
                     if (notification.getStatus() == Notification.Status.DELIVERED) {
@@ -48,12 +53,16 @@ public class SmsConsumer {
                         log.info("[SMS] Received notificationId={} userId={}",
                                 event.getNotificationId(), event.getUserId());
                         notification.setStatus(Notification.Status.DELIVERED);
+                        metricService.recordDelivery(notification.getChannel(), Notification.Status.DELIVERED.name());
                     } catch (Exception e) {
                         log.error("[SMS] Failed to send notificationId={}: {}",
                                 event.getNotificationId(), e.getMessage());
                         notification.setStatus(Notification.Status.FAILED);
+                        metricService.recordDelivery(notification.getChannel(), Notification.Status.FAILED.name());
                     }
                     notificationRepository.save(notification);
+                    Duration duration = Duration.ofMillis(System.currentTimeMillis() - startTime);
+                    metricService.recordDeliveryTime(notification.getChannel(), duration);
                 });
     }
 }
