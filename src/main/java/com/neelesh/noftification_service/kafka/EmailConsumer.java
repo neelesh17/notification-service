@@ -51,6 +51,7 @@ public class EmailConsumer {
                             notification.setStatus(Notification.Status.DELAYED);
                             notificationRepository.save(notification);
                             dndSchedulerService.scheduleRetry(notification, userPreferences.getDndEnd(), userPreferences.getDndStart(), userPreferences.getTimeZone());
+                            metricService.recordDelivery(notification.getChannel(), Notification.Status.DELAYED.name());
                             return;
                         }
                         emailSender.send(notification, userPreferences);
