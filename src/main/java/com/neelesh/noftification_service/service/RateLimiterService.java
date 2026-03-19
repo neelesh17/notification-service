@@ -2,6 +2,7 @@ package com.neelesh.noftification_service.service;
 
 import com.neelesh.noftification_service.enums.Channel;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
@@ -13,7 +14,8 @@ import java.util.concurrent.TimeUnit;
 public class RateLimiterService {
     private final StringRedisTemplate redisTemplate;
 
-    private static final Long MAX_RATE = 10L;
+    @Value("${app.redis.rate-limit.max-requests}")
+    private Long maxRequests;
 
     public void checkRateLimit(String userId, Channel channel){
         String key = "limit:" + userId + ":" + channel;
@@ -21,7 +23,7 @@ public class RateLimiterService {
         Long count = valueOps.increment(key);
         if(count == 1){
             redisTemplate.expire(key, 60, TimeUnit.MINUTES);
-        }else if(count>MAX_RATE){
+        }else if(count>maxRequests){
             throw new RateLimitExceededException("Rate limit exceeded for the user: " + userId);
         }
     }
