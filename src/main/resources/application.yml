@@ -45,7 +45,7 @@ spring:
 app:
   redis:
     rate-limit:
-      max-requests: 10000
+      max-requests: 10
   kafka:
     topics:
       email: notif.email
