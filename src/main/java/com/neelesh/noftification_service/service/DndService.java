@@ -27,4 +27,11 @@ public class DndService {
         LocalTime dndEnd = userPreferences.getDndEnd();
         return dndStart != null && dndEnd != null && isInDnd(now, dndStart, dndEnd);
     }
+
+    // Testable version
+    public boolean isDndActive(UserPreferences userPreferences, LocalTime currentTime) {
+        LocalTime dndStart = userPreferences.getDndStart();
+        LocalTime dndEnd = userPreferences.getDndEnd();
+        return dndStart != null && dndEnd != null && isInDnd(currentTime, dndStart, dndEnd);
+    }
 }

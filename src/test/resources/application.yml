@@ -1,0 +1,32 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+  kafka:
+    bootstrap-servers: ${spring.embedded.kafka.brokers}
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+
+app:
+  providers:
+    sendgrid:
+      api-key: test-key
+      from-email: test@test.com
+    firebase:
+      credentials-path: test-path
+    twilio:
+      account-sid: test-sid
+      auth-token: test-token
+      from-number: +1234567890
+  redis:
+    rate-limit:
+      max-requests: 10
+  kafka:
+    topics:
+      email: notif.email
+      push: notif.push
+      sms: notif.sms
+  outbox:
+    poller-delay-ms: 5000
