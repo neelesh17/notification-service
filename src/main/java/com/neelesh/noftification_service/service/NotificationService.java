@@ -40,4 +40,9 @@ public class NotificationService {
         outboxRepository.save(outboxEvent);
         return notification;
     }
+
+    public Notification getNotification(Long id) {
+        return notificationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Notification not found: " + id));
+    }
 }
