@@ -32,6 +32,10 @@ The notification service helps send notifications to consumers based on differen
    no infrastructure required. Testcontainers was evaluated for
    integration tests but requires Docker API 1.40+ — unit tests
    provide sufficient coverage for business logic validation.
+10. GitHub Actions CI/CD — 4-stage pipeline on every push:
+        secret scanning (TruffleHog), build, test, SonarCloud
+        quality analysis. Pipeline fails fast — each stage only
+        runs if the previous one passes.
 
 # Tech Stack
 1. Java 21
@@ -152,7 +156,7 @@ Note: latency measures API acceptance time (202 response).
 Actual delivery is async via Kafka. Email delivery latency
 via SendGrid averages ~1.6s measured via Prometheus metrics.
 
-# Week 5 test summary:
+# Test:
 ```
 DndServiceTest              12 tests ✅
 RateLimiterServiceTest      11 tests ✅
@@ -165,8 +169,13 @@ Total                       46 tests ✅
 # Known Limitations
 - FCM requires a real Android/iOS device for actual push delivery — circuit breaker tested with invalid token
 - Twilio trial account limited to verified numbers only
-- Single FCM token per user — production would require a separate user_fcm_tokens table for multi-device support
 
 # Upcoming
-- GitHub Actions CI/CD pipeline
-- SonarCloud code quality analysis
+- Grafana dashboard for Prometheus metrics visualisation
+
+# Development Notes
+This project was built with AI-assisted development using Claude
+(Anthropic). All code was written, reviewed and understood by the
+developer — Claude acted as a technical mentor, asking questions
+and reviewing code rather than generating it directly. This mirrors
+how senior engineers use AI tools in production environments.
