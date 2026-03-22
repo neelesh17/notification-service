@@ -27,6 +27,7 @@ public class MetricService {
     public void recordDeliveryTime(Channel channel, Duration duration){
         Timer.builder("notification.delivery.time")
                 .tag("channel", channel.name())
+                .publishPercentileHistogram(true)
                 .register(meterRegistry)
                 .record(duration);
     }

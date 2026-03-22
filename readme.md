@@ -149,12 +149,15 @@ Load tested with JMeter — 50 concurrent users, 1000 total requests.
 |--------|-------|
 | Throughput | 840 notifications/min |
 | Average latency | 8ms |
-| p99 latency | 17ms |
+| p99 delivery latency (SendGrid) | 1.40s |
 | Error rate | 0% |
 
 Note: latency measures API acceptance time (202 response).
 Actual delivery is async via Kafka. Email delivery latency
 via SendGrid averages ~1.6s measured via Prometheus metrics.
+
+# Grafana Dashboard
+![Grafana Dashboard](grafana-dashboard.png)
 
 # Test:
 ```
