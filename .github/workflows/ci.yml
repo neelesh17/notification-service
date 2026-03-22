@@ -93,8 +93,3 @@ jobs:
             -Dsonar.sources=src/main/java
             -Dsonar.tests=src/test/java
             -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
-  ```
-
-The flow is now:
-  ```
-  secret-scan → build → test → sonar
