@@ -27,7 +27,7 @@ public class NotificationService {
                 .channel(notificationRequest.getChannel())
                 .metadata(notificationRequest.getMetadata())
                 .build();
-        notificationRepository.save(notification);
+        notification = notificationRepository.save(notification);
         OutboxEvent outboxEvent = OutboxEvent.builder()
                 .notificationId(notification.getId())
                 .userId(notification.getUserId())
