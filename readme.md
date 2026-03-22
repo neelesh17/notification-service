@@ -27,6 +27,11 @@ The notification service helps send notifications to consumers based on differen
 6. Resilience4j circuit breaker per provider — if SendGrid/FCM/Twilio starts failing, the circuit opens after 50% failure rate over 10 calls. Retries with exponential backoff (1s → 2s → 4s) before recording a failure.
 7. Provider isolation — each channel has its own Kafka topic, consumer, and circuit breaker. An SMS provider outage doesn't affect email delivery.
 8. DND windows with timezone-aware midnight-crossing check — notifications during quiet hours are marked DELAYED and retried via Quartz scheduler after the DND window ends.
+9. Unit tests over integration tests — 46 unit tests using Mockito
+   mock dependencies to test business logic in isolation. Fast,
+   no infrastructure required. Testcontainers was evaluated for
+   integration tests but requires Docker API 1.40+ — unit tests
+   provide sufficient coverage for business logic validation.
 
 # Tech Stack
 1. Java 21
