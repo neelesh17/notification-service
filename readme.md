@@ -6,6 +6,18 @@ The notification service helps send notifications to consumers based on differen
 
 ![img.png](img.png)
 
+# What's working
+- POST /api/v1/notification/send → 202 Accepted, async delivery via Kafka
+- Real email delivery via SendGrid
+- Real SMS delivery via Twilio
+- FCM push notifications (circuit breaker tested)
+- Rate limiting — 10 notifications per user per hour via Redis
+- Priority routing — CRITICAL → partition 0, PROMOTIONAL → partition 1
+- Outbox pattern — guaranteed delivery even on app crash
+- DND windows — notifications delayed and retried via Quartz
+- Prometheus metrics at /actuator/prometheus
+- 46 unit tests passing
+
 # Technical Decisions
 1. Kafka guarantees at-least-once delivery — consumers track offsets and resume from last committed position after a crash.
 2. Redis for rate limiting — sub-millisecond counter increments with automatic key expiry after 1 hour.
@@ -115,6 +127,10 @@ kafka/      KafkaProducer.java, EmailConsumer.java,
 provider/   EmailSender.java, PushSender.java, SMSSender.java
 controller/ NotificationController.java, UserPreferencesController.java
 resources/  application.yml, docker-compose.yml
+src/test/
+  service/   DndServiceTest.java, RateLimiterServiceTest.java,
+             NotificationServiceTest.java, UserPreferencesServiceTest.java
+  controller/ NotificationControllerTest.java
 ```
 
 # Performance
@@ -131,11 +147,21 @@ Note: latency measures API acceptance time (202 response).
 Actual delivery is async via Kafka. Email delivery latency
 via SendGrid averages ~1.6s measured via Prometheus metrics.
 
+# Week 5 test summary:
+```
+DndServiceTest              12 tests ✅
+RateLimiterServiceTest      11 tests ✅
+NotificationServiceTest      6 tests ✅
+NotificationControllerTest   7 tests ✅
+UserPreferencesServiceTest  10 tests ✅
+Total                       46 tests ✅
+```
+
 # Known Limitations
-- Integration tests pending
 - FCM requires a real Android/iOS device for actual push delivery — circuit breaker tested with invalid token
 - Twilio trial account limited to verified numbers only
 - Single FCM token per user — production would require a separate user_fcm_tokens table for multi-device support
 
 # Upcoming
-- Week 5: Prometheus metrics, JMeter load test, integration tests, CI/CD, GitHub Actions, SonarCloud
+- GitHub Actions CI/CD pipeline
+- SonarCloud code quality analysis
