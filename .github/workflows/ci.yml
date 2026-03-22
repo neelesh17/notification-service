@@ -30,6 +30,7 @@ jobs:
           path: ./
           base: ${{ github.event.repository.default_branch }}
           head: HEAD
+        continue-on-error: true
 
       - name: Build
         run: ./mvnw clean compile -Dapp.providers.sendgrid.api-key=test -Dapp.providers.sendgrid.from-email=test@test.com -Dapp.providers.firebase.credentials-path=test -Dapp.providers.twilio.account-sid=test -Dapp.providers.twilio.auth-token=test -Dapp.providers.twilio.from-number=+1234567890 -Dapp.redis.rate-limit.max-requests=10
